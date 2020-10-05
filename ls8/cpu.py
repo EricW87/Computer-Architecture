@@ -7,7 +7,9 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.reg = [0] * 8
+        self.ram = []
+        self.pc = 0
 
     def load(self):
         """Load a program into memory."""
@@ -59,6 +61,16 @@ class CPU:
             print(" %02X" % self.reg[i], end='')
 
         print()
+
+    def ram_read(self, loc):
+        try:
+            return self.ram_read(loc)
+        except:
+            print("ram_read() out of bounds. Exiting")
+            sys.exit(1)
+
+    def ram_write():
+        pass
 
     def run(self):
         """Run the CPU."""
