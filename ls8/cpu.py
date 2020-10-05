@@ -1,16 +1,26 @@
 """CPU functionality."""
 
 import sys
-
+HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
         self.reg = [0] * 8
-        self.ram = []
+        self.reg[7] = 0xF4
+        self.ram = [0] * 256
         self.pc = 0
+        self.halted = False
 
+    def ram_read(self, address):
+        return self.ram[address]
+
+    def ram_write():
+        self.ram[address] = val
+    
     def load(self):
         """Load a program into memory."""
 
@@ -62,16 +72,23 @@ class CPU:
 
         print()
 
-    def ram_read(self, loc):
-        try:
-            return self.ram_read(loc)
-        except:
-            print("ram_read() out of bounds. Exiting")
-            sys.exit(1)
 
-    def ram_write():
-        pass
 
     def run(self):
         """Run the CPU."""
-        pass
+        while not self.halted:
+            instruction_to_execute = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+            self.execute_instruction(instruction_to_execute, operand_a, operand_b)
+
+    def execute_instruction(self, instruction, operand_a, operand_b):
+        if instruction == HLT:
+            self.halted = True
+            self.pc += 1
+        elif instruction == LDI:
+            self.reg[operand_a] = operand_b
+            self.pc += 3
+        elif instruction == PRN:
+            print(self.reg[operand_a])
+            self.pc += 2
