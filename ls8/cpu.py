@@ -43,7 +43,7 @@ class CPU:
                             break
 
                     if len(instruction) > 0:
-                        print(instruction, int(instruction, 2))
+                        #print(instruction, int(instruction, 2))
                         self.ram[address] = int(instruction, 2)
                         address += 1
         except:
@@ -94,13 +94,17 @@ class CPU:
     def execute_instruction(self, instruction, operand_a, operand_b):
         if instruction == HLT:
             self.halted = True
-            self.pc += 1
+            #self.pc += 1
         elif instruction == LDI:
             self.reg[operand_a] = operand_b
-            self.pc += 3
+            #self.pc += 3
         elif instruction == PRN:
             print(self.reg[operand_a])
-            self.pc += 2
+            #self.pc += 2
         elif instruction == MUL:
             self.alu("MUL", operand_a, operand_b)
-            self.pc += 3
+            #self.pc += 3
+
+        instruction = instruction >> 6
+        #print(bin(instruction), instruction)
+        self.pc += 1 + instruction
