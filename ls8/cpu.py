@@ -1,35 +1,63 @@
 """CPU functionality."""
 
 import sys
+SP = 7
+
+HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
+ADD = 0b10100000
+MUL = 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110
+CALL = 0b01010000
+RET = 0b00010001
 
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.reg = [0] * 8
+        self.reg[SP] = 0xF4
+        self.ram = [0] * 256
+        self.pc = 0
+        self.halted = False
 
+    def ram_read(self, address):
+        #print(address)
+        return self.ram[address]
+
+    def ram_write():
+        self.ram[address] = val
+    
     def load(self):
         """Load a program into memory."""
+        if len(sys.argv) != 2:
+            print("Not enough arguments")
+            sys.exit(1)
+            
 
+        fname = sys.argv[1]      
         address = 0
-
         # For now, we've just hardcoded a program:
+        try:
+            with open(fname) as f:
+                for l in f: #for every line in file f
+                    instruction = ""
+                    for c in l: #for every character in the line
+                        if c == '0' or c == '1':
+                            instruction += c
+                        else:
+                            break
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
-
+                    if len(instruction) > 0:
+                        #print(instruction, int(instruction, 2))
+                        self.ram[address] = int(instruction, 2)
+                        address += 1
+        except:
+            print("File not found")
+            sys.exit(1)
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -37,6 +65,8 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -60,6 +90,52 @@ class CPU:
 
         print()
 
+
+
     def run(self):
         """Run the CPU."""
-        pass
+        while not self.halted:
+            instruction_to_execute = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+            self.execute_instruction(instruction_to_execute, operand_a, operand_b)
+
+    def execute_instruction(self, instruction, operand_a, operand_b):
+        #print(f'{bin(instruction)} {bin(operand_a)} {bin(operand_b)}')
+        if instruction == HLT:
+            self.halted = True
+            #self.pc += 1
+        elif instruction == LDI:
+            self.reg[operand_a] = operand_b
+            #self.pc += 3
+        elif instruction == PRN:
+            print(self.reg[operand_a])
+            #self.pc += 2
+        elif instruction == ADD:
+            self.alu("ADD", operand_a, operand_b)
+        elif instruction == MUL:
+            self.alu("MUL", operand_a, operand_b)
+            #self.pc += 3
+        elif instruction == PUSH:
+            self.reg[SP] -= 1
+            value = self.reg[operand_a]
+            self.ram[self.reg[SP]] = value
+        elif instruction == POP:
+            topvalue = self.ram[self.reg[SP]]
+            self.reg[operand_a] = topvalue
+            self.reg[SP] += 1
+        elif instruction == CALL:
+            self.reg[SP] -= 1
+            self.ram[self.reg[SP]] = self.pc + 2
+            self.pc = self.reg[operand_a]
+            return
+        elif instruction == RET:
+            self.pc = self.ram[self.reg[SP]]
+            self.reg[SP] += 1
+            return
+
+
+        instruction = instruction >> 6
+        #print(bin(instruction), instruction)
+        #if instruction != CALL and instruction != RET:
+        self.pc += 1 + instruction
