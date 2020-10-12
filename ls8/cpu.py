@@ -6,9 +6,12 @@ SP = 7
 HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
+ADD = 0b10100000
 MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
+CALL = 0b01010000
+RET = 0b00010001
 
 class CPU:
     """Main CPU class."""
@@ -22,6 +25,7 @@ class CPU:
         self.halted = False
 
     def ram_read(self, address):
+        #print(address)
         return self.ram[address]
 
     def ram_write():
@@ -97,6 +101,7 @@ class CPU:
             self.execute_instruction(instruction_to_execute, operand_a, operand_b)
 
     def execute_instruction(self, instruction, operand_a, operand_b):
+        #print(f'{bin(instruction)} {bin(operand_a)} {bin(operand_b)}')
         if instruction == HLT:
             self.halted = True
             #self.pc += 1
@@ -106,6 +111,8 @@ class CPU:
         elif instruction == PRN:
             print(self.reg[operand_a])
             #self.pc += 2
+        elif instruction == ADD:
+            self.alu("ADD", operand_a, operand_b)
         elif instruction == MUL:
             self.alu("MUL", operand_a, operand_b)
             #self.pc += 3
@@ -117,8 +124,18 @@ class CPU:
             topvalue = self.ram[self.reg[SP]]
             self.reg[operand_a] = topvalue
             self.reg[SP] += 1
+        elif instruction == CALL:
+            self.reg[SP] -= 1
+            self.ram[self.reg[SP]] = self.pc + 2
+            self.pc = self.reg[operand_a]
+            return
+        elif instruction == RET:
+            self.pc = self.ram[self.reg[SP]]
+            self.reg[SP] += 1
+            return
 
 
         instruction = instruction >> 6
         #print(bin(instruction), instruction)
+        #if instruction != CALL and instruction != RET:
         self.pc += 1 + instruction
