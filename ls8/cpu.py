@@ -1,17 +1,22 @@
 """CPU functionality."""
 
 import sys
+SP = 7
+
 HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
-MUL = 0B10100010
+MUL = 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110
+
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
         self.reg = [0] * 8
-        self.reg[7] = 0xF4
+        self.reg[SP] = 0xF4
         self.ram = [0] * 256
         self.pc = 0
         self.halted = False
@@ -104,6 +109,15 @@ class CPU:
         elif instruction == MUL:
             self.alu("MUL", operand_a, operand_b)
             #self.pc += 3
+        elif instruction == PUSH:
+            self.reg[SP] -= 1
+            value = self.reg[operand_a]
+            self.ram[self.reg[SP]] = value
+        elif instruction == POP:
+            topvalue = self.ram[self.reg[SP]]
+            self.reg[operand_a] = topvalue
+            self.reg[SP] += 1
+
 
         instruction = instruction >> 6
         #print(bin(instruction), instruction)
